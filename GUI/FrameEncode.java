@@ -32,7 +32,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
 
-public class FrameEncode extends JFrame {
+public class FrameEncode extends JFrame implements ActionListener {
 	
 	// Khai báo biến
 	private JPanel panelResult;
@@ -52,6 +52,7 @@ public class FrameEncode extends JFrame {
 	private JScrollPane scrollPaneHistory;
 	private JTable tableHistory;
 	private JMenuItem menuItemHelp;
+	private DefaultTableModel model,modelHistory;
 	
 	// Kết nối Cơ sở dữ liệu thông qua Class ConnectDB();
 	ConnectDB cn=new ConnectDB();
@@ -89,76 +90,18 @@ public class FrameEncode extends JFrame {
 		
 		//Tạo menuItem "Open" dùng để đọc file input chứa chuỗi cần mã hóa và set sự kiện cho menuItem "Open"
 		menuItemOpen = new JMenuItem("Open File");
-		menuItemOpen.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// Chọn file
-				JFileChooser fileChooser = new JFileChooser();
-				int rVal = fileChooser.showOpenDialog(null);
-				String filePath = "";
-				if (rVal == JFileChooser.APPROVE_OPTION) {
-				     String filename = fileChooser.getSelectedFile().getName();
-				     String directory = fileChooser.getCurrentDirectory().toString();
-				     filePath = directory +"\\"+filename;
-				  // Đọc file theo đường dẫn (filePath)
-						BufferedReader bufferedReader = null;
-						
-				        try {   
-				            bufferedReader = new BufferedReader(new FileReader(filePath));       
-				    
-				            String textFile=""; // khởi tạo chuỗi String chứa dữ liệu trong file
-				            String line;		// khởi tạo chuỗi String chứa dữ liệu theo từng dòng trong file
-				            
-				            /*Đọc dữ liệu theo dòng và cộng dữ liệu từng dòng vào textFile ta được toàn bộ file*/
-				            while ((line = bufferedReader.readLine()) != null) {
-				                textFile += line +"\n";
-				            }		           
-				            textEncodeString.setText(textFile); // Hiển thị dữ liệu trong File lên textEncodeString chứa input cần mã hóa
-				        }
-				        catch (IOException e1) {
-				            JOptionPane.showMessageDialog(null, "Error :"+e1); 
-				        } finally {
-				            try {
-				                bufferedReader.close();
-				            } catch (IOException e1) {
-				            	JOptionPane.showMessageDialog(null, "Error :"+e1); 
-				            }
-				        }	     
-				 }else {
-					 JOptionPane.showMessageDialog(null, "Cancel Open file !!!"); 
-				}
-
-			}
-		});
 		menuFile.add(menuItemOpen);
+		menuItemOpen.addActionListener(this);
 		
 		//Tạo menuItem "Help" dùng để hiển thị cách sử dụng chức năng encode để mã hóa kí tự và set sự kiện cho menuItem "Help"
 		menuItemHelp = new JMenuItem("Help");
-		menuItemHelp.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			String helpString = "Bước 1 : Nhập chuỗi dữ liệu cần mã hóa bằng một trong các cách sau :\r\n" + 
-					"- Nhâp trực tiếp từ mục “ Enter the Encode string”.\r\n" + 
-					"- Nhập từ file bằng cách chọn File -> Open File.\r\n" + 
-					"- Sử dụng lại input trước đây : \r\n" + 
-					"                      Chọn từ bảng lịch sử để có thể xem và sửa lại chuỗi string đã từng sử dụng\r\n" + 
-					"Bước 2 : Nhấn nút “Encode” để sử dụng chức năng Encode của ứng dụng, mã hóa chuỗi kí tự thành dãy bit\r\n" + 
-					"-----Chuỗi Result Encode được lưu trong file .txt theo đường dẫn-----\r\n"+
-					"D:\\Study\\Nam2\\HocKy2\\DALTUD\\DoAn\\History\\tenfile.txt\r\n" + 
-					"------Danh sách tần số được lưu trong file .bin theo đường dẫn-------\r\n" + 
-					"D:\\Study\\Nam2\\HocKy2\\DALTUD\\DoAn\\History\\tenfile.bin\r\n" +
-					"Lưu ý : tenfile được lưu mặc định theo ngày giờ thực hiện encode" ;
-			JOptionPane.showMessageDialog(null, helpString);
-			}
-		});
 		menuFile.add(menuItemHelp);
+		menuItemHelp.addActionListener(this);		
 		
 		//Tạo menuItem "Exit" dùng để thoát khỏi cửa sổ Encode và set sự kiện cho menuItem "Exit"
 		menuItemExit = new JMenuItem("Exit");
-		menuItemExit.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setVisible(false);
-			}
-		});
 		menuFile.add(menuItemExit);
+		menuItemExit.addActionListener(this);
 		
 /*===========================================TẠO CÁC THÀNH PHẦN TRONG GIAO DIỆN CỦA CỬA SỔ ENCODE =======================================*/		
 		
@@ -200,17 +143,14 @@ public class FrameEncode extends JFrame {
 		gbc_panelButton.gridy = 2;
 		contentPane.add(panelButton, gbc_panelButton);
 		
-		// Tạo button Encode và thêm vào panelButton
+		// Tạo button Encode và set sự kiện cho button Encode
 		buttonEncode = new JButton("Encode");
+		buttonEncode.addActionListener(this);
 		panelButton.add(buttonEncode);
 		
 		// Tạo button Back có chức năng thoát khỏi cửa sổ Encode để quay lại cửa sổ chính của ứng dụng và set sự kiện cho button
 		buttonBack = new JButton("Back");
-		buttonBack.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			       setVisible(false);
-			}
-		});
+		buttonBack.addActionListener(this);
 		panelButton.add(buttonBack);
 		
 		// Tạo panelResult chứa các thành phần để hiện thị kết quả của quá trình mã hóa dữ liệu
@@ -255,7 +195,7 @@ public class FrameEncode extends JFrame {
 			}
 		));
 		scrollPaneTable.setViewportView(tableEncode);
-		DefaultTableModel model = (DefaultTableModel) tableEncode.getModel();
+		model = (DefaultTableModel) tableEncode.getModel();
 		tableEncode.setAutoCreateRowSorter(true); // thêm chức năng sort theo từng column
 		
 		// Tạo scrollPane chứa table hiển thị Lịch sử
@@ -269,7 +209,7 @@ public class FrameEncode extends JFrame {
 		contentPane.add(scrollPaneHistory, gbc_scrollPaneHistory);
 		
 		// Table hiển thị Lịch sử
-		DefaultTableModel modelHistory = new DefaultTableModel();
+		modelHistory = new DefaultTableModel();
 		tableHistory = new JTable(modelHistory);
 		// Set sự kiện cho table, với sự kiện ClickMouse ,bấm phím UP hay DOWN sẽ lấy thông tin từ table chứa lịch sử
 		tableHistory.addKeyListener(new KeyAdapter() {
@@ -277,14 +217,14 @@ public class FrameEncode extends JFrame {
 			public void keyReleased(KeyEvent e) {
 				if(e.getKeyCode()== KeyEvent.VK_UP || 
 						e.getKeyCode() == KeyEvent.VK_DOWN) {
-					getInfo(tableHistory, modelHistory);
+					getInfo(tableHistory);
 				}
 			}
 		});
 		tableHistory.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				getInfo(tableHistory, modelHistory);
+				getInfo(tableHistory);
 			}
 		});
 	
@@ -296,82 +236,147 @@ public class FrameEncode extends JFrame {
         modelHistory.addColumn("Date Modified");
         cn.getDataEncode(tableHistory, modelHistory); // lấy dữ liệu từ cơ sở dữ liệu hiển thị lên bảng
         tableHistory.setAutoCreateRowSorter(true); //thêm chức năng sort theo từng column
-        
-/* Set sự kiện cho button Encode để thực hiện chức năng mã hóa chuỗi kí tự */
-		buttonEncode.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				model.setRowCount(0);
-				try {
-					huffman.buildHuffman(textEncodeString.getText());
-				} catch (Exception e2) {
-					JOptionPane.showMessageDialog(null, "Mã hóa thất bại !! Thử lại");
-				}
-				 // thực hiện mã hóa
-				txtResultEncode.setText(huffman.kq.toString());	  // hiển thị kết quả mã hóa lên textResultEncode
-				for(var entry : huffman.huffmanCode.entrySet())
-				{
-					model.addRow(new Object[]
-							{
-								entry.getKey(),null,entry.getValue()
-							});
-				}
-				// Hiển thị tần số các kí tự lên column Frequency trong bảng chứa kết quả encode
-				int i = 0;
-				for(var entry : huffman.tanso.entrySet()) {
-					model.setValueAt(entry.getValue(), i++, 1);
-				}
-				/* Lưu kết quả tần số và chuỗi sau mã hóa vào file để sử dụng cho decode
-				 * Sử dụng hàm random để tạo các tên file tự động.
-				 * file .bin dùng để lưu tần số của các kí tự
-				 * file .text dùng để lưu chuỗi sau mã hóa
-				 */
-				try {
-					SimpleDateFormat formatter = new SimpleDateFormat("dd_MM_yyyy HH-mm-ss ");  
-				    Date date = new Date();  
-				    Random generator = new Random();
-				    String tenfile = "encode " + formatter.format(date) + generator.nextInt();
-					FileWriter fileWriteTanso = new FileWriter("D:\\Study\\Nam2\\HocKy2\\DALTUD\\DoAn\\History\\" + tenfile +".bin");
-					FileWriter fileWriteResult = new FileWriter("D:\\Study\\Nam2\\HocKy2\\DALTUD\\DoAn\\History\\" + tenfile +".txt");
-					/* 
-						Xử lý ngoại lệ với chuỗi chứa kí tự Enter(\n) để lúc ghi file không tự động xuống dòng, 
-						gây ra lỗi trong quá trình decode sau này. Đổi kí tự Enter thành "NewLine"
-					*/
-					for(var entry : huffman.tanso.entrySet()) 
-					{
-						if (entry.getKey().equals('\n')) fileWriteTanso.write("NewLine" + " "+ entry.getValue() + "\n");
-						else fileWriteTanso.write(entry.getKey() + " " + entry.getValue() + "\n");
-					}
-					fileWriteTanso.close();
-					fileWriteResult.write(huffman.kq.toString());
-					fileWriteResult.close();
-					
-					/*
-					 * Insert kết quả ( input và output ) vào cơ sở dữ liệu
-					 * Nếu indexRow = -1 thì thực hiện insert dữ liệu
-					 * Nếu indexROw khác -1 thì thực hiện update dữ liệu tại ví trí ID đang được chọn
-					 */
-					int indexRow = tableHistory.getSelectedRow();
-					String ID = "";
-					if (indexRow != -1) {
-						ID = tableHistory.getValueAt(indexRow,0).toString();
-					}
-					cn.selectEncode(indexRow,ID,textEncodeString.getText(), huffman.kq.toString());
-					JOptionPane.showMessageDialog(null, "Mã hóa thành công");
-				} catch (Exception e2) {
-					JOptionPane.showMessageDialog(null, "Error: "+e2);
-				}
-				// Thực hiện đẩy dữ liệu từ cơ sở dữ liệu lên table chứa lịch sử
-				cn.getDataEncode(tableHistory, modelHistory);
-			}
-		});
 	
 	}
 	
 	/*Hàm getInfo để lấy thông tin từ bảng History và hiện lên input và output */
-	private void getInfo(JTable table,DefaultTableModel mode)
+	private void getInfo(JTable table)
 	{
 		int index = table.getSelectedRow();
 		textEncodeString.setText(table.getValueAt(index, 1).toString()); // hiển thị input
 		txtResultEncode.setText(table.getValueAt(index, 2).toString());  // hiển thị output
+	}
+/*===============================HÀM XỬ LÝ SỰ KIỆN CHO CÁC THÀNH PHẦN ================================*/
+	public void actionPerformed(ActionEvent e) {
+		
+		// Sự kiện cho chức năng Open File
+		if(e.getSource()==menuItemOpen) {
+			JFileChooser fileChooser = new JFileChooser();
+			int rVal = fileChooser.showOpenDialog(null);
+			String filePath = "";
+			if (rVal == JFileChooser.APPROVE_OPTION) {
+			     String filename = fileChooser.getSelectedFile().getName();
+			     String directory = fileChooser.getCurrentDirectory().toString();
+			     filePath = directory +"\\"+filename;
+			  // Đọc file theo đường dẫn (filePath)
+					BufferedReader bufferedReader = null;
+					
+			        try {   
+			            bufferedReader = new BufferedReader(new FileReader(filePath));       
+			    
+			            String textFile=""; // khởi tạo chuỗi String chứa dữ liệu trong file
+			            String line;		// khởi tạo chuỗi String chứa dữ liệu theo từng dòng trong file
+			            
+			            /*Đọc dữ liệu theo dòng và cộng dữ liệu từng dòng vào textFile ta được toàn bộ file*/
+			            while ((line = bufferedReader.readLine()) != null) {
+			                textFile += line +"\n";
+			            }		           
+			            textEncodeString.setText(textFile); // Hiển thị dữ liệu trong File lên textEncodeString chứa input cần mã hóa
+			        }
+			        catch (IOException e1) {
+			            JOptionPane.showMessageDialog(null, "Error :"+e1); 
+			        } finally {
+			            try {
+			                bufferedReader.close();
+			            } catch (IOException e1) {
+			            	JOptionPane.showMessageDialog(null, "Error :"+e1); 
+			            }
+			        }	     
+			 }else {
+				 JOptionPane.showMessageDialog(null, "Cancel Open file !!!"); 
+			}
+		}
+		
+		// Sự kiện cho chức năng Help
+		if(e.getSource()==menuItemHelp) {
+			String helpString = "Bước 1 : Nhập chuỗi dữ liệu cần mã hóa bằng một trong các cách sau :\r\n" + 
+					"- Nhâp trực tiếp từ mục “ Enter the Encode string”.\r\n" + 
+					"- Nhập từ file bằng cách chọn File -> Open File.\r\n" + 
+					"- Sử dụng lại input trước đây : \r\n" + 
+					"                      Chọn từ bảng lịch sử để có thể xem và sửa lại chuỗi string đã từng sử dụng\r\n" + 
+					"Bước 2 : Nhấn nút “Encode” để sử dụng chức năng Encode của ứng dụng, mã hóa chuỗi kí tự thành dãy bit\r\n" + 
+					"-----Chuỗi Result Encode được lưu trong file .txt theo đường dẫn-----\r\n"+
+					"D:\\Study\\Nam2\\HocKy2\\DALTUD\\DoAn\\History\\tenfile.txt\r\n" + 
+					"------Danh sách tần số được lưu trong file .bin theo đường dẫn-------\r\n" + 
+					"D:\\Study\\Nam2\\HocKy2\\DALTUD\\DoAn\\History\\tenfile.bin\r\n" +
+					"Lưu ý : tenfile được lưu mặc định theo ngày giờ thực hiện encode" ;
+			JOptionPane.showMessageDialog(null, helpString);
+		}
+		
+		// Sự kiện cho chức năng Exit
+		if(e.getSource()==menuItemExit) {
+			setVisible(false);
+		}
+		
+		// Sự kiện cho button Back
+		if(e.getSource()==buttonBack) {
+			setVisible(false);
+		}
+		
+		//Sự kiện cho button Encode
+		if(e.getSource()==buttonEncode) {
+			model.setRowCount(0);
+			try {
+				Huffman.buildHuffman(textEncodeString.getText());
+			} catch (Exception e2) {
+				JOptionPane.showMessageDialog(null, "Mã hóa thất bại !! Thử lại");
+			}
+			 // thực hiện mã hóa
+			txtResultEncode.setText(Huffman.kq.toString());	  // hiển thị kết quả mã hóa lên textResultEncode
+			for(var entry : Huffman.huffmanCode.entrySet())
+			{
+				model.addRow(new Object[]
+						{
+							entry.getKey(),null,entry.getValue()
+						});
+			}
+			// Hiển thị tần số các kí tự lên column Frequency trong bảng chứa kết quả encode
+			int i = 0;
+			for(var entry : Huffman.tanso.entrySet()) {
+				model.setValueAt(entry.getValue(), i++, 1);
+			}
+			/* Lưu kết quả tần số và chuỗi sau mã hóa vào file để sử dụng cho decode
+			 * Sử dụng hàm random để tạo các tên file tự động.
+			 * file .bin dùng để lưu tần số của các kí tự
+			 * file .text dùng để lưu chuỗi sau mã hóa
+			 */
+			try {
+				SimpleDateFormat formatter = new SimpleDateFormat("dd_MM_yyyy HH-mm-ss ");  
+			    Date date = new Date();  
+			    Random generator = new Random();
+			    String tenfile = "encode " + formatter.format(date) + generator.nextInt();
+				FileWriter fileWriteTanso = new FileWriter("D:\\Study\\Nam2\\HocKy2\\DALTUD\\DoAn\\History\\" + tenfile +".bin");
+				FileWriter fileWriteResult = new FileWriter("D:\\Study\\Nam2\\HocKy2\\DALTUD\\DoAn\\History\\" + tenfile +".txt");
+				/* 
+					Xử lý ngoại lệ với chuỗi chứa kí tự Enter(\n) để lúc ghi file không tự động xuống dòng, 
+					gây ra lỗi trong quá trình decode sau này. Đổi kí tự Enter thành "NewLine"
+				*/
+				for(var entry : Huffman.tanso.entrySet()) 
+				{
+					if (entry.getKey().equals('\n')) fileWriteTanso.write("NewLine" + " "+ entry.getValue() + "\n");
+					else fileWriteTanso.write(entry.getKey() + " " + entry.getValue() + "\n");
+				}
+				fileWriteTanso.close();
+				fileWriteResult.write(Huffman.kq.toString());
+				fileWriteResult.close();
+				
+				/*
+				 * Insert kết quả ( input và output ) vào cơ sở dữ liệu
+				 * Nếu indexRow = -1 thì thực hiện insert dữ liệu
+				 * Nếu indexROw khác -1 thì thực hiện update dữ liệu tại ví trí ID đang được chọn
+				 */
+				int indexRow = tableHistory.getSelectedRow();
+				String ID = "";
+				if (indexRow != -1) {
+					ID = tableHistory.getValueAt(indexRow,0).toString();
+				}
+				cn.executeEncode(indexRow,ID,textEncodeString.getText(), Huffman.kq.toString());
+				JOptionPane.showMessageDialog(null, "Mã hóa thành công");
+			} catch (Exception e2) {
+				JOptionPane.showMessageDialog(null, "Error: "+e2);
+			}
+			// Thực hiện đẩy dữ liệu từ cơ sở dữ liệu lên table chứa lịch sử
+			cn.getDataEncode(tableHistory, modelHistory);
+		}
 	}
 }
