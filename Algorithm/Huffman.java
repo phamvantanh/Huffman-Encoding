@@ -1,25 +1,19 @@
 package project;
 
 import java.util.*;
-
-import javax.swing.JFileChooser;
-
-import java.io.*;
 	
-// tạo note (nút gốc của cây mã hóa Huffman)
-class Note
+class Node
 {
-	// Khai báo biến
 	char ch;
 	int tanso;
-	Note left = null , right = null;
-	Note(char ch , int tanso)
+	Node left = null , right = null;
+	Node(char ch , int tanso)
 	{
 		this.ch = ch;
 		this.tanso = tanso;
 	}
 	
-	public Note(char ch ,int tanso ,Note left ,Note right)
+	public Node(char ch ,int tanso ,Node left ,Node right)
 	{
 		this.ch = ch;
 		this.tanso = tanso;
@@ -28,7 +22,7 @@ class Note
 	}
 }
 
-class huffman
+class Huffman
 {
 	/*
 	 * chuỗi kq dùng để chứa chuỗi mã hóa(010110..)
@@ -45,32 +39,25 @@ class huffman
 	//định nghĩa các hàm trả kiểu dữ liệu về tương ứng
 	public StringBuilder getkq()
 	{
-		return huffman.kq;
+		return Huffman.kq;
 	}
 	//------------------------
 	public StringBuilder getcode()
 	{
-		return huffman.code;
-	}
-	//------------------------
-	
-	public Object getmap()
-	{
-		
-		return huffman.huffmanCode.entrySet();
+		return Huffman.code;
 	}
 	//------------------------
 	
 	public Object gettanso()
 	{
 		
-		return huffman.tanso.entrySet();
+		return Huffman.tanso.entrySet();
 	}
 	//------------------------
 	
 	
-	// hàm encode dùng để gắn 0 vs 1 lên cây hufffman
-	public static void encode(Note root ,String str ,Map<Character, String> huffmanCode)
+	// Duyệt qua cây Huffman và lưu mã Huffman
+	public static void encode(Node root ,String str ,Map<Character, String> huffmanCode)
 	{
 		if(root == null)
 			return ;
@@ -85,7 +72,7 @@ class huffman
 	
 	
 	// duyệt cây huffman và giải mã chuỗi được mã hóa
-	public static int decode(Note root ,int Index ,StringBuilder kq)
+	public static int decode(Node root ,int Index ,StringBuilder kq)
 	{
 		if(root == null)
 			return Index;
@@ -123,7 +110,7 @@ class huffman
 		
 		// tạo 1 hàng đợi ưu tiên để lưu trữ các nút của cây
 		// mục ưu tiên cao nhất có tần số thấp nhất
-		PriorityQueue<Note> hd;
+		PriorityQueue<Node> hd;
 				
 		hd = new PriorityQueue<>(Comparator.comparingInt(k -> k.tanso));
 		
@@ -132,7 +119,7 @@ class huffman
 		
 		for(var entry : tanso.entrySet())
 		{
-			hd.add(new Note(entry.getKey() , entry.getValue()));
+			hd.add(new Node(entry.getKey() , entry.getValue()));
 		}
 		
 		
@@ -140,18 +127,18 @@ class huffman
 		{
 			// loại bỏ 2 nút có ưu tiên cao nhất
 			// hay tần số thấp nhất trong hàng đợi
-			Note left = hd.poll();
-			Note right = hd.poll();
+			Node left = hd.poll();
+			Node right = hd.poll();
 			// tạo 1 nút mới (cha 2 nút con)
 			// với tần số bằng tổng 2 nút con
 			// thêm nút mới vào hàng đợi
 			int sum = left.tanso + right.tanso;
-			hd.add(new Note('\0', sum, left , right));
+			hd.add(new Node('\0', sum, left , right));
 		}
 		
 		
 		// root lưu trữ con trỏ đến root của huffman tree
-		Note root = hd.peek();
+		Node root = hd.peek();
 		
 		
 		// Duyệt cây huffman và lưu trữ mã huffman trong Map
@@ -173,7 +160,7 @@ class huffman
 	// xây dựng lại cây huffman với flie tần số được truyền vào và file chứa 
 	// chuỗi mã hóa -> kết hợp 2 file để giải mã
 
-	public static void builddecode(String input,String mahoa)
+	public static void buildDecode(String input,String mahoa)
 	{
 		//lấy dữ liệu tần số và cho vào hashmap như ban đầu tương tự như mã hóa
 		// và build lại cây huffman
@@ -197,14 +184,14 @@ class huffman
 		// tạo 1 hàng đợi ưu tiên để lưu trữ các nút của cây
 		// mục ưu tiên cao nhất có tần số thấp nhất
 
-		PriorityQueue<Note> hd;
+		PriorityQueue<Node> hd;
 		hd = new PriorityQueue<>(Comparator.comparingInt(k -> k.tanso));
 
 		// tạo 1 nút lá cho mỗi ký tự 
 		// và thềm nó vào hàng đợi
 		for(var entry : tanso.entrySet())
 		{
-			hd.add(new Note(entry.getKey() , entry.getValue()));
+			hd.add(new Node(entry.getKey() , entry.getValue()));
 		}
 		
 		
@@ -212,18 +199,18 @@ class huffman
 		{
 			// loại bỏ 2 nút có ưu tiên cao nhất
 			// hay tần số thấp nhất trong hàng đợi
-			Note left = hd.poll();
-			Note right = hd.poll();
+			Node left = hd.poll();
+			Node right = hd.poll();
 			// tạo 1 nút mới (cha 2 nút con)
 			// với tần số bằng tổng 2 nút con
 			// thêm nút mới vào hàng đợi
 			int sum = left.tanso + right.tanso;
-			hd.add(new Note('\0', sum, left , right));
+			hd.add(new Node('\0', sum, left , right));
 		}
 		
 		
 		// root lưu trữ con trỏ đến root của huffman tree
-		Note root = hd.peek();
+		Node root = hd.peek();
 		// đi qua cây huffman và lưu trữ mã huffman trong map
 		  huffmanCode = new HashMap<>();
 		encode(root, "", huffmanCode);
@@ -242,9 +229,6 @@ class huffman
 		{
 			index = decode(root, index, kq);
 		}
-		
 	}
 
-
-	
 }
