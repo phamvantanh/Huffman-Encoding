@@ -14,6 +14,8 @@ import javax.swing.JLabel;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.JTextField;
+
+import java.awt.Button;
 import java.awt.Color;
 import java.awt.GridLayout;
 import javax.swing.JTextArea;
@@ -38,7 +40,7 @@ import java.io.IOException;
 import java.awt.event.ActionEvent;
 import javax.swing.border.EtchedBorder;
 
-public class FrameDecode extends JFrame {
+public class FrameDecode extends JFrame implements ActionListener{
 	
 	// Khai báo biến
 	private JPanel contentPane;
@@ -48,6 +50,14 @@ public class FrameDecode extends JFrame {
 	private JTable tableHistory;
 	private JTextArea textDecodeString;
 	private JTextArea textResultDecode;
+	private JMenuItem menuItemSave;
+	private JMenuItem menuItemHelp;
+	private JMenuItem menuItemExit;
+	private JButton buttonBrowse;
+	private JButton buttonOpenFile;
+	private JButton buttonBack;
+	private JButton buttonDecode;
+	private DefaultTableModel model;
 	
 	// Kết nối Cơ sở dữ liệu thông qua Class ConnectDB();
 	ConnectDB cn = new ConnectDB();
@@ -84,54 +94,19 @@ public class FrameDecode extends JFrame {
 		menuBar.add(menuFile);
 		
 		//Tạo menuItem "SaveResult" dùng để lưu chuỗi sau giải mã vào File và set sự kiện cho menuItem "Save Result"
-		JMenuItem menuItemSave = new JMenuItem("Save Result");
-		menuItemSave.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// Chọn 1 file có sẵn hoặc tạo mới một file để lưu kết quả ( chuỗi ký tự sau giải mã )
-				JFileChooser fileChooser = new JFileChooser();
-				int select = fileChooser.showSaveDialog(null);
-				if(select == JFileChooser.APPROVE_OPTION) {			
-					try {
-						//Ghi kết quả vào file
-						FileWriter fileResult = new FileWriter(fileChooser.getSelectedFile());
-						fileResult.write(textResultDecode.getText());
-						fileResult.close();
-						JOptionPane.showMessageDialog(null,"Đã lưu kết quả vào file");
-					} catch (IOException e1) {
-						JOptionPane.showMessageDialog(null,"Error:"+e1);
-					}
-				}
-				else {
-					// Hiển thị thông báo Cancel nếu hủy việc lưu dữ liệu
-					JOptionPane.showMessageDialog(null,"Cancel");
-				}
-			}
-		});		
+		menuItemSave = new JMenuItem("Save Result");
+		menuItemSave.addActionListener(this);
 		menuFile.add(menuItemSave);
 
 		//Tạo menuItem "Help" dùng để hiển thị cách sử dụng chức năng encode để mã hóa kí tự và set sự kiện cho menuItem "Help"
-		JMenuItem menuItemHelp = new JMenuItem("Help");
-		menuItemHelp.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String helpString = "Bước 1:  Nhập file chứa tần số xuất hiện của kí tự trong chuỗi cần giải mã.\r\n" + 
-						"Bước 2: Nhập chuỗi bit mã hóa, bằng 2 cách\r\n" + 
-						"--------Cách 1 : Nhập trực tiếp trong ô : “Enter the Decode String”\r\n" + 
-						"--------Cách 2 : Nhập từ file bằng cách chọn Get Decode String from file \r\n" + 
-						"Bước 3 : Nhấn Decode để giải mã.\r\n"+
-						"--- Có thể thực hiện lưu kết quả sau giải mã bằng cách chọn Save Result";
-				JOptionPane.showMessageDialog(null, helpString);
-			}
-		});
+		menuItemHelp = new JMenuItem("Help");
+		menuItemHelp.addActionListener(this);
 		menuFile.add(menuItemHelp);
 		
 		
 		//Tạo menuItem "Exit" dùng để thoát khỏi cửa sổ Decode và set sự kiện cho menuItem "Exit"
-		JMenuItem menuItemExit = new JMenuItem("Exit");
-		menuItemExit.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setVisible(false);
-			}
-		});
+		menuItemExit = new JMenuItem("Exit");
+		menuItemExit.addActionListener(this);
 		menuFile.add(menuItemExit);
 		
 		
@@ -170,36 +145,14 @@ public class FrameDecode extends JFrame {
 		textFrequency.setColumns(18);
 		
 		// Tạo button Browse để lấy file chứa tần số và set sự kiện cho button
-		JButton buttonBrowse = new JButton("Browse...");
+		buttonBrowse = new JButton("Browse...");
 		GridBagConstraints gbc_buttonBrowse = new GridBagConstraints();
 		gbc_buttonBrowse.fill = GridBagConstraints.HORIZONTAL;
 		gbc_buttonBrowse.insets = new Insets(0, 0, 5, 0);
 		gbc_buttonBrowse.gridx = 3;
 		gbc_buttonBrowse.gridy = 0;
 		contentPane.add(buttonBrowse, gbc_buttonBrowse);
-		
-		buttonBrowse.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// Chọn File
-				JFileChooser fileChooser = new JFileChooser();
-				int select = fileChooser.showOpenDialog(null);
-				String filePath = ""; // Chuỗi chứa đường dẫn
-				if (select == JFileChooser.APPROVE_OPTION) {
-				     String filename = fileChooser.getSelectedFile().getName();
-				     String directory = fileChooser.getCurrentDirectory().toString(); // chuỗi chứa địa chỉ thư mục
-				     filePath = directory +"\\"+filename;
-
-
-				//Hiển thị đường dẫn file tần số lên textFrequency
-				     textFrequency.setText(filePath.replace("\\", "\\\\"));
-				     
-
-			} 
-			else {
-				JOptionPane.showMessageDialog(null, "Cancel get frequency from file !!!");
-			}
-			} 
-		});
+		buttonBrowse.addActionListener(this);
 				
 
 		// Tạo scrollPaneInput chứa JTextArea để nhập input
@@ -219,45 +172,13 @@ public class FrameDecode extends JFrame {
 		scrollPaneInput.setViewportView(textDecodeString);
 		
 		// Tạo button OpenFile để có thể lấy dữ liệu input từ file
-		JButton buttonOpenFile = new JButton("Get Decode string from File");
-		buttonOpenFile.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JFileChooser fileChooser = new JFileChooser();
-				int select = fileChooser.showOpenDialog(null);
-				String filePath = "";
-				if (select == JFileChooser.APPROVE_OPTION) {
-				     String filename = fileChooser.getSelectedFile().getName();
-				     String directory = fileChooser.getCurrentDirectory().toString();
-				     filePath = directory+"\\"+filename;
-				   //Đọc dữ liệu File
-					BufferedReader br = null;
-				    try {   
-				            br = new BufferedReader(new FileReader(filePath));       	             
-				            textFileInput = br.readLine();
-				            
-				            //Hiển thị chuỗi input lên textFileInput
-				            textDecodeString.setText(textFileInput);
-				            
-				        }
-				        catch (IOException e1) {
-				        	JOptionPane.showMessageDialog(null, "Error:"+e1);
-				        } finally {
-				            try {
-				                br.close();
-				            } catch (IOException e1) {
-				            	JOptionPane.showMessageDialog(null, "Error:"+e1);
-				            }
-				        }				     
-				 }
-				else {
-					JOptionPane.showMessageDialog(null, "Cancel Open file");
-				}	
-		  }
-		});
+		buttonOpenFile = new JButton("Get Decode string from File");
+		buttonOpenFile.addActionListener(this);
 		scrollPaneInput.setColumnHeaderView(buttonOpenFile);
 		
 		// Tạo button Decode và set sự kiện để thực hiện chức năng giải mã chuỗi kí tự được mã hóa
-		JButton buttonDecode = new JButton("Decode");
+		buttonDecode = new JButton("Decode");
+		buttonDecode.addActionListener(this);
 		GridBagConstraints gbc_buttonDecode = new GridBagConstraints();
 		gbc_buttonDecode.insets = new Insets(0, 0, 5, 5);
 		gbc_buttonDecode.gridx = 1;
@@ -265,17 +186,13 @@ public class FrameDecode extends JFrame {
 		contentPane.add(buttonDecode, gbc_buttonDecode);
 		
 		// Tạo button Back có chức năng thoát khỏi cửa sổ Encode để quay lại cửa sổ chính của ứng dụng và set sự kiện cho button
-		JButton buttonBack = new JButton("Back");
+		buttonBack = new JButton("Back");
 		GridBagConstraints gbc_buttonBack = new GridBagConstraints();
 		gbc_buttonBack.insets = new Insets(0, 0, 5, 5);
 		gbc_buttonBack.gridx = 2;
 		gbc_buttonBack.gridy = 2;
 		contentPane.add(buttonBack, gbc_buttonBack);
-		buttonBack.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setVisible(false);
-			}
-		});
+		buttonBack.addActionListener(this);
 		
 		// Tạo panelResult chứa các thành phần hiển thị kết quả giải mã
 		JPanel panelResult = new JPanel();
@@ -313,7 +230,7 @@ public class FrameDecode extends JFrame {
 			public void keyReleased(KeyEvent e) {
 				if(e.getKeyCode()== KeyEvent.VK_UP || 
 						e.getKeyCode() == KeyEvent.VK_DOWN) {
-						getInfo(tableHistory, model);
+						getInfo(tableHistory);
 					
 				}
 			}
@@ -321,7 +238,7 @@ public class FrameDecode extends JFrame {
 		tableHistory.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				getInfo(tableHistory, model);
+				getInfo(tableHistory);
 			}
 		});
 		
@@ -334,77 +251,179 @@ public class FrameDecode extends JFrame {
 	    model.addColumn("Date Modified");
 	    cn.getDataDecode(tableHistory, model); 	   // lấy dữ liệu từ cơ sở dữ liệu hiển thị lên bảng
 	    tableHistory.setAutoCreateRowSorter(true); // thêm chức năng sort theo từng column
-	    
-	    /* Set sự kiện cho button Decode để thực hiện chức năng giải mã chuỗi kí tự */ 
-	    buttonDecode.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {   
-				if(textFrequency.getText().equals("")==false && textDecodeString.getText().equals("")==false) 
-				{		
-						
-					
-					BufferedReader bufferedReader = null;
-					// Đọc file tần số từ đường dẫn hiển thị ở textFrequecy
-			        try {   
-			            bufferedReader = new BufferedReader(new FileReader(textFrequency.getText()));       
-
-			             textFileTanso = ""; // khởi tạo chuỗi String chứa dữ liệu trong file
-			             String line ;		 // khởi tạo chuỗi String chứa dữ liệu theo từng dòng trong file
-			             
-			             /*Đọc dữ liệu theo dòng và cộng dữ liệu từng dòng vào textFile ta được toàn bộ file*/
-			  	         while((line = bufferedReader.readLine()) != null){
-			  	        	textFileTanso = textFileTanso + line + "\n";
-			  	        }
-			        }
-			        catch (IOException e1) {
-			        	JOptionPane.showMessageDialog(null, "Error :"+e1); 
-			        } finally {
-			            try {
-			                bufferedReader.close();
-			            } catch (IOException e1) {
-			            	JOptionPane.showMessageDialog(null, "Error :"+e1); 
-			            }
-			        }
-			        
-			    	 	// Thực hiện giải mã
-			        try {
-			        	huffman.builddecode(textFileTanso, textDecodeString.getText());
-			        	// Hiển thị kết quả lên textResultDecode
-						textResultDecode.setText(huffman.code.toString());
-						
-						/*
-						 * Insert kết quả ( input và output ) vào cơ sở dữ liệu
-						 * Nếu indexRow = -1 thì thực hiện insert dữ liệu
-						 * Nếu indexROw khác -1 thì thực hiện update dữ liệu tại ví trí ID đang được chọn
-						 */
-						int indexRow = tableHistory.getSelectedRow(); // số thứ tự hàng đang được chọn trong table lịch sử 
-						String ID = "";
-						if (indexRow != -1) { // indexRow = -1 khi không hàng nào được chọn
-							ID = tableHistory.getValueAt(indexRow,0).toString();
-						}
-						// Gọi class thực hiện truy vấn cơ sở dữ liệu
-						cn.selectDecode(indexRow,ID,textDecodeString.getText(), huffman.code.toString(),textFrequency.getText());
-						JOptionPane.showMessageDialog(null, "Giải mã thành công !!!");
-					} catch (Exception e2) {
-						JOptionPane.showMessageDialog(null, "Giải mã thất bại !!! Error :"+e2.getMessage());
-					}
-			    	 	
-					}
-					
-					else {
-	    	 		
-	    	 		JOptionPane.showMessageDialog(null, "Kiểm tra dữ liệu vào ( tần số , chuỗi cần giải mã ) !!!");
-	    	 	}
-				cn.getDataDecode(tableHistory, model);
-	    }
-		});
+	  
 	}
-	/*Hàm getInfo để lấy thông tin từ bảng History và hiện lên input và output và text chứa tần số */
-	private void getInfo(JTable table,DefaultTableModel mode)
+	
+	
+/*==================Hàm getInfo để lấy thông tin từ bảng History và hiện lên input và output và text chứa tần số =================*/
+	private void getInfo(JTable table)
 	{
 		int index = table.getSelectedRow();
 		textDecodeString.setText(table.getValueAt(index, 1).toString()); // hiển thị input
 		textResultDecode.setText(table.getValueAt(index, 2).toString()); // hiển thị output
 		textFrequency.setText(table.getValueAt(index, 3).toString());    // hiển thị đường dẫn tần số
+	}
+	
+/*============================Hàm xử lý sự kiện cho các thành phần==========================================*/
+	public void actionPerformed(ActionEvent e) {
+		
+		// Sự kiện cho chức năng Save Result
+		if(e.getSource()== menuItemSave) {
+			// Chọn 1 file có sẵn hoặc tạo mới một file để lưu kết quả ( chuỗi ký tự sau giải mã )
+			JFileChooser fileChooser = new JFileChooser();
+			int select = fileChooser.showSaveDialog(null);
+			if(select == JFileChooser.APPROVE_OPTION) {			
+				try {
+					//Ghi kết quả vào file
+					FileWriter fileResult = new FileWriter(fileChooser.getSelectedFile());
+					fileResult.write(textResultDecode.getText());
+					fileResult.close();
+					JOptionPane.showMessageDialog(null,"Đã lưu kết quả vào file");
+				} catch (IOException e1) {
+					JOptionPane.showMessageDialog(null,"Error:"+e1);
+				}
+			}
+			else {
+				// Hiển thị thông báo Cancel nếu hủy việc lưu dữ liệu
+				JOptionPane.showMessageDialog(null,"Cancel");
+			}
+		}
+		
+		// Sự kiện cho chức năng Help
+		if(e.getSource()== menuItemHelp) {
+			String helpString = "Bước 1:  Nhập file chứa tần số xuất hiện của kí tự trong chuỗi cần giải mã.\r\n" + 
+					"Bước 2: Nhập chuỗi bit mã hóa, bằng 2 cách\r\n" + 
+					"--------Cách 1 : Nhập trực tiếp trong ô : “Enter the Decode String”\r\n" + 
+					"--------Cách 2 : Nhập từ file bằng cách chọn Get Decode String from file \r\n" + 
+					"Bước 3 : Nhấn Decode để giải mã.\r\n"+
+					"--- Có thể thực hiện lưu kết quả sau giải mã bằng cách chọn Save Result";
+			JOptionPane.showMessageDialog(null, helpString);
+		}
+		
+		// Sự kiện cho chức năng Exit
+		if(e.getSource()==menuItemExit) {
+			setVisible(false);
+		}
+		
+		// Sự kiện cho chức năng Browse -- Nhập tần số từ File
+		if(e.getSource()==buttonBrowse) {
+			JFileChooser fileChooser = new JFileChooser();
+			int select = fileChooser.showOpenDialog(null);
+			String filePath = ""; // Chuỗi chứa đường dẫn
+			if (select == JFileChooser.APPROVE_OPTION) {
+			     String filename = fileChooser.getSelectedFile().getName();
+			     String directory = fileChooser.getCurrentDirectory().toString(); // chuỗi chứa địa chỉ thư mục
+			     filePath = directory +"\\"+filename;
+
+
+			//Hiển thị đường dẫn file tần số lên textFrequency
+			     textFrequency.setText(filePath.replace("\\", "\\\\"));
+			     
+				} else {
+						JOptionPane.showMessageDialog(null, "Cancel get frequency from file !!!");
+						}
+		}
+		
+		// Sự kiện cho chức năng Nhập input từ File
+		if(e.getSource()==buttonOpenFile) {
+			JFileChooser fileChooser = new JFileChooser();
+			int select = fileChooser.showOpenDialog(null);
+			String filePath = "";
+			if (select == JFileChooser.APPROVE_OPTION) {
+			     String filename = fileChooser.getSelectedFile().getName();
+			     String directory = fileChooser.getCurrentDirectory().toString();
+			     filePath = directory+"\\"+filename;
+			   //Đọc dữ liệu File
+				BufferedReader br = null;
+			    try {   
+			            br = new BufferedReader(new FileReader(filePath));       	             
+			            textFileInput = br.readLine();
+			            
+			            //Hiển thị chuỗi input lên textFileInput
+			            textDecodeString.setText(textFileInput);
+			            
+			        }
+			        catch (IOException e1) {
+			        	JOptionPane.showMessageDialog(null, "Error:"+e1);
+			        } finally {
+			            try {
+			                br.close();
+			            } catch (IOException e1) {
+			            	JOptionPane.showMessageDialog(null, "Error:"+e1);
+			            }
+			        }				     
+			 }
+			else {
+				JOptionPane.showMessageDialog(null, "Cancel Open file");
+			}	
+		}
+	
+		
+	// Sự kiện cho button Back
+	if(e.getSource()==buttonBack) {
+		setVisible(false);
+	}
+	
+	// Sự kiện cho button Decode
+	if(e.getSource()==buttonDecode) {
+		if(textFrequency.getText().equals("")==false && textDecodeString.getText().equals("")==false) 
+		{		
+				
+			
+			BufferedReader bufferedReader = null;
+			// Đọc file tần số từ đường dẫn hiển thị ở textFrequecy
+	        try {   
+	            bufferedReader = new BufferedReader(new FileReader(textFrequency.getText()));       
+
+	             textFileTanso = ""; // khởi tạo chuỗi String chứa dữ liệu trong file
+	             String line ;		 // khởi tạo chuỗi String chứa dữ liệu theo từng dòng trong file
+	             
+	             /*Đọc dữ liệu theo dòng và cộng dữ liệu từng dòng vào textFile ta được toàn bộ file*/
+	  	         while((line = bufferedReader.readLine()) != null){
+	  	        	textFileTanso = textFileTanso + line + "\n";
+	  	        }
+	        }
+	        catch (IOException e1) {
+	        	JOptionPane.showMessageDialog(null, "Error :"+e1); 
+	        } finally {
+	            try {
+	                bufferedReader.close();
+	            } catch (IOException e1) {
+	            	JOptionPane.showMessageDialog(null, "Error :"+e1); 
+	            }
+	        }
+	        
+	    	 	// Thực hiện giải mã
+	        try {
+	        	Huffman.buildDecode(textFileTanso, textDecodeString.getText());
+	        	// Hiển thị kết quả lên textResultDecode
+				textResultDecode.setText(Huffman.code.toString());
+				
+				/*
+				 * Insert kết quả ( input và output ) vào cơ sở dữ liệu
+				 * Nếu indexRow = -1 thì thực hiện insert dữ liệu
+				 * Nếu indexROw khác -1 thì thực hiện update dữ liệu tại ví trí ID đang được chọn
+				 */
+				int indexRow = tableHistory.getSelectedRow(); // số thứ tự hàng đang được chọn trong table lịch sử 
+				String ID = "";
+				if (indexRow != -1) { // indexRow = -1 khi không hàng nào được chọn
+					ID = tableHistory.getValueAt(indexRow,0).toString();
+				}
+				// Gọi class thực hiện truy vấn cơ sở dữ liệu
+				cn.executeDecode(indexRow,ID,textDecodeString.getText(), Huffman.code.toString(),textFrequency.getText());
+				JOptionPane.showMessageDialog(null, "Giải mã thành công !!!");
+			} catch (Exception e2) {
+				JOptionPane.showMessageDialog(null, "Giải mã thất bại !!! Error :"+e2.getMessage());
+			}
+	    	 	
+			}
+			
+			else {
+	 		
+	 		JOptionPane.showMessageDialog(null, "Kiểm tra dữ liệu vào ( tần số , chuỗi cần giải mã ) !!!");
+	 	}
+		cn.getDataDecode(tableHistory, model);
+	}
+			
 	}
 }
