@@ -220,7 +220,7 @@ public class FrameDecode extends JFrame implements ActionListener{
 		gbc_scrollPaneHistory.gridy = 4;
 		contentPane.add(scrollPaneHistory, gbc_scrollPaneHistory);
 		
-		DefaultTableModel model = new DefaultTableModel();
+		model = new DefaultTableModel();
 		
 		// Tạo table chứa lịch sử decode
 		tableHistory = new JTable(model);
