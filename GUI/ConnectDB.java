@@ -23,13 +23,6 @@ public class ConnectDB {
 		try 
 		{
 			Class.forName("com.mysql.cj.jdbc.Driver");  // Kết nối Java và MySQL thông qua JDBC
-		}
-		catch (ClassNotFoundException ex) 
-		{
-			System.out.print("Error: " + ex.getMessage());
-		}
-		try
-		{	
 			String hostname = "localhost";  // Database hoạt động trên máy chủ
 			String databaseName = "huffman";// Tên database
 			String user = "root";			// Tên người dùng để đăng nhập kết nối database
@@ -37,9 +30,9 @@ public class ConnectDB {
 			String url = "jdbc:mysql://"+hostname+"/"+databaseName+"?user="+user+"&password="+password+""; // Đường dẫn kết nối
 			con = DriverManager.getConnection(url); // tạo kết nối theo đường dẫn
 			stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_UPDATABLE); // Tạo statement
-		}
-		catch(SQLException se)
-		{
+		} catch (ClassNotFoundException ex) {
+			System.out.print("Error: " + ex.getMessage());
+		}catch(SQLException se){
 			System.err.println("Error: "+se.getMessage());
 		}
 	}
@@ -66,7 +59,7 @@ public class ConnectDB {
         	}
     }
 	// Hàm cập nhật dữ liệu khi thực hiện chức năng encode
-	public void selectEncode(int indexRow, String ID, String input, String output)
+	public void executeEncode(int indexRow, String ID, String input, String output)
 	{	
 		// Câu lệnh insert bảng ghi mới
 		String insert = "INSERT INTO huffman.encode(INPUT,OUTPUT) VALUES ('"+input+"', '"+output+"');";
@@ -112,7 +105,7 @@ public class ConnectDB {
         	}
     }
 	// Hàm cập nhật dữ liệu khi thực hiện chức năng decode
-	public void selectDecode(int indexRow, String ID, String input, String output,String frequency)
+	public void executeDecode(int indexRow, String ID, String input, String output,String frequency)
 	{	
 		// Câu lệnh insert bảng ghi mới
 		String insert = "INSERT INTO huffman.decode(INPUT,OUTPUT,FREQUENCY) VALUES ('"+input+"', '"+output+"','"+frequency+"');";
