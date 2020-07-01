@@ -14,7 +14,7 @@ import com.mysql.cj.result.Row;
 
 public class ConnectDB {
 	
-	// Khai báo biến tĩnh
+	
 	static java.sql.Connection con;
 	static java.sql.Statement stmt;
 	static	ResultSet resultSet;
@@ -22,14 +22,14 @@ public class ConnectDB {
 	{
 		try 
 		{
-			Class.forName("com.mysql.cj.jdbc.Driver");  // Kết nối Java và MySQL thông qua JDBC
-			String hostname = "localhost";  // Database hoạt động trên máy chủ
-			String databaseName = "huffman";// Tên database
-			String user = "root";			// Tên người dùng để đăng nhập kết nối database
-			String password = "123456";		// Mật khẩu		
-			String url = "jdbc:mysql://"+hostname+"/"+databaseName+"?user="+user+"&password="+password+""; // Đường dẫn kết nối
+			Class.forName("com.mysql.cj.jdbc.Driver");  
+			String hostname = "localhost"; 
+			String databaseName = "huffman";
+			String user = "root";			
+			String password = "123456";			
+			String url = "jdbc:mysql://"+hostname+"/"+databaseName+"?user="+user+"&password="+password+""; 
 			con = DriverManager.getConnection(url); // tạo kết nối theo đường dẫn
-			stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_UPDATABLE); // Tạo statement
+			stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_UPDATABLE); 
 		} catch (ClassNotFoundException ex) {
 			System.out.print("Error: " + ex.getMessage());
 		}catch(SQLException se){
@@ -62,22 +62,22 @@ public class ConnectDB {
 	public void executeEncode(int indexRow, String ID, String input, String output)
 	{	
 		// Câu lệnh insert bảng ghi mới
-		String insert = "INSERT INTO huffman.encode(INPUT,OUTPUT) VALUES ('"+input+"', '"+output+"');";
+		String insertEncode = "INSERT INTO huffman.encode(INPUT,OUTPUT) VALUES ('"+input+"', '"+output+"');";
 		// Câu lệnh update bảng ghi đã tồn tại
-		String update = "UPDATE huffman.encode SET INPUT='"+input+"',OUTPUT='"+output+"',DATE_MODIFIED = default WHERE ID ="+ID+"";
+		String updateEncode = "UPDATE huffman.encode SET INPUT='"+input+"',OUTPUT='"+output+"',DATE_MODIFIED = default WHERE ID ="+ID+"";
 		// Gọi class Connect() để kết nối Cơ sở dữ liệu
 		Connect();
 		
 		if (indexRow != -1) {
 				try {
-		    	   stmt.execute(update);
+		    	   stmt.execute(updateEncode);
 		    	   
 					}catch (Exception e) {
 							JOptionPane.showMessageDialog(null, "Error: "+e);
 					}
 		} else 
 				try {
-						stmt.execute(insert);
+						stmt.execute(insertEncode);
 					} catch (Exception e) {
 							JOptionPane.showMessageDialog(null, "Error: "+e);
 					}		
@@ -108,22 +108,22 @@ public class ConnectDB {
 	public void executeDecode(int indexRow, String ID, String input, String output,String frequency)
 	{	
 		// Câu lệnh insert bảng ghi mới
-		String insert = "INSERT INTO huffman.decode(INPUT,OUTPUT,FREQUENCY) VALUES ('"+input+"', '"+output+"','"+frequency+"');";
+		String insertDecode = "INSERT INTO huffman.decode(INPUT,OUTPUT,FREQUENCY) VALUES ('"+input+"', '"+output+"','"+frequency+"');";
 		// Câu lệnh update bảng ghi đã tồn tại
-		String update = "UPDATE huffman.decode SET INPUT='"+input+"',OUTPUT='"+output+"',FREQUENCY='"+frequency+"',"+
+		String updateDecode = "UPDATE huffman.decode SET INPUT='"+input+"',OUTPUT='"+output+"',FREQUENCY='"+frequency+"',"+
 						"DATE_MODIFIED = default WHERE ID ="+ID+"";
 		// Gọi class Connect() để kết nối Cơ sở dữ liệu
 		Connect();
 		if (indexRow != -1) {
 				try {
-		    	   stmt.execute(update);
+		    	   stmt.execute(updateDecode);
 		    	   
 					}catch (Exception e) {
 							JOptionPane.showMessageDialog(null, "Error: "+e);
 					}
 		} else 
 				try {
-						stmt.execute(insert);
+						stmt.execute(insertDecode);
 					} catch (Exception e) {
 							JOptionPane.showMessageDialog(null, "Error: "+e);
 					}		
