@@ -100,7 +100,7 @@ public class FrameStart extends javax.swing.JFrame {
         labelImage.setHorizontalAlignment(SwingConstants.CENTER);
         setMinimumSize(new Dimension(500, 480));
         getContentPane().setLayout(null);
-        labelImage.setIcon(new javax.swing.ImageIcon("D:\\Study\\Nam2\\HocKy2\\DALTUD\\background.jpg")); // NOI18N
+        labelImage.setIcon(new javax.swing.ImageIcon("Source/background.jpg")); // NOI18N
         labelImage.setMinimumSize(new java.awt.Dimension(500, 500));
         labelImage.setPreferredSize(new java.awt.Dimension(500, 50));
         getContentPane().add(labelImage);
