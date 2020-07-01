@@ -345,8 +345,8 @@ public class FrameEncode extends JFrame implements ActionListener {
 			    Date date = new Date();  
 			    Random generator = new Random();
 			    String tenfile = "encode " + formatter.format(date) + generator.nextInt();
-				FileWriter fileWriteTanso = new FileWriter("D:\\Study\\Nam2\\HocKy2\\DALTUD\\DoAn\\History\\" + tenfile +".bin");
-				FileWriter fileWriteResult = new FileWriter("D:\\Study\\Nam2\\HocKy2\\DALTUD\\DoAn\\History\\" + tenfile +".txt");
+				FileWriter fileWriteTanso = new FileWriter("Source/" + tenfile +".bin");
+				FileWriter fileWriteResult = new FileWriter("Source/" + tenfile +".txt");
 				/* 
 					Xử lý ngoại lệ với chuỗi chứa kí tự Enter(\n) để lúc ghi file không tự động xuống dòng, 
 					gây ra lỗi trong quá trình decode sau này. Đổi kí tự Enter thành "NewLine"
