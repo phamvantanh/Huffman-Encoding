@@ -261,7 +261,7 @@ public class FrameDecode extends JFrame implements ActionListener{
 		int index = table.getSelectedRow();
 		textDecodeString.setText(table.getValueAt(index, 1).toString()); // hiển thị input
 		textResultDecode.setText(table.getValueAt(index, 2).toString()); // hiển thị output
-		textFrequency.setText(table.getValueAt(index, 3).toString());    // hiển thị đường dẫn tần số
+		textFrequency.setText(table.getValueAt(index, 3).toString().replace("\\", "\\\\"));    // hiển thị đường dẫn tần số
 	}
 	
 /*============================Hàm xử lý sự kiện cho các thành phần==========================================*/
@@ -289,7 +289,7 @@ public class FrameDecode extends JFrame implements ActionListener{
 			}
 		}
 		
-		// Sự kiện cho chức năng Help
+		
 		if(e.getSource()== menuItemHelp) {
 			String helpString = "Bước 1:  Nhập file chứa tần số xuất hiện của kí tự trong chuỗi cần giải mã.\r\n" + 
 					"Bước 2: Nhập chuỗi bit mã hóa, bằng 2 cách\r\n" + 
@@ -300,12 +300,12 @@ public class FrameDecode extends JFrame implements ActionListener{
 			JOptionPane.showMessageDialog(null, helpString);
 		}
 		
-		// Sự kiện cho chức năng Exit
+		
 		if(e.getSource()==menuItemExit) {
 			setVisible(false);
 		}
 		
-		// Sự kiện cho chức năng Browse -- Nhập tần số từ File
+	
 		if(e.getSource()==buttonBrowse) {
 			JFileChooser fileChooser = new JFileChooser();
 			int select = fileChooser.showOpenDialog(null);
@@ -316,7 +316,7 @@ public class FrameDecode extends JFrame implements ActionListener{
 			     filePath = directory +"\\"+filename;
 
 
-			//Hiển thị đường dẫn file tần số lên textFrequency
+			
 			     textFrequency.setText(filePath.replace("\\", "\\\\"));
 			     
 				} else {
@@ -324,7 +324,7 @@ public class FrameDecode extends JFrame implements ActionListener{
 						}
 		}
 		
-		// Sự kiện cho chức năng Nhập input từ File
+		
 		if(e.getSource()==buttonOpenFile) {
 			JFileChooser fileChooser = new JFileChooser();
 			int select = fileChooser.showOpenDialog(null);
@@ -359,12 +359,12 @@ public class FrameDecode extends JFrame implements ActionListener{
 		}
 	
 		
-	// Sự kiện cho button Back
+	
 	if(e.getSource()==buttonBack) {
 		setVisible(false);
 	}
 	
-	// Sự kiện cho button Decode
+	
 	if(e.getSource()==buttonDecode) {
 		if(textFrequency.getText().equals("")==false && textDecodeString.getText().equals("")==false) 
 		{		
@@ -375,8 +375,8 @@ public class FrameDecode extends JFrame implements ActionListener{
 	        try {   
 	            bufferedReader = new BufferedReader(new FileReader(textFrequency.getText()));       
 
-	             textFileTanso = ""; // khởi tạo chuỗi String chứa dữ liệu trong file
-	             String line ;		 // khởi tạo chuỗi String chứa dữ liệu theo từng dòng trong file
+	             textFileTanso = ""; 
+	             String line ;		
 	             
 	             /*Đọc dữ liệu theo dòng và cộng dữ liệu từng dòng vào textFile ta được toàn bộ file*/
 	  	         while((line = bufferedReader.readLine()) != null){
